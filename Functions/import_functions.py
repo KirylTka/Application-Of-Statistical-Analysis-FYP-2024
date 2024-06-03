@@ -1,17 +1,21 @@
+#Import and Preprocessing Functions
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from scipy.ndimage import distance_transform_edt as sdf
-def get_(health,technique,heart_mode,param,mask='myo'):
+def get(health,technique,heart_mode,param,mask='myo'):
     '''
     Main method for pulling data from csv files
+
+    Inputs:
     healthy: 'Healthy' or 'HCM'
     technique: 'SE' or 'STEAM'
     heart_mode: 'Systole' or 'Diastole'
     param: params2d = ['CR', 'E2A', 'E2A_alt', 'E3A', 'FA', 'HA', 'IA', 'MD', 'mode', 'negative_eigenvalues', 'norm', 'S0', 'TA']
     mask: any of the masks available in the mask folders
     
+    Outputs:
     Returns: list with two entries. The first entry is a list of the images, the second entry is a list of the masks
     Dont unpack the output, if you see a function has a data input, it means you need to pass in this list of two entries
     '''
@@ -30,7 +34,7 @@ def get_(health,technique,heart_mode,param,mask='myo'):
         mask_file = np.load(f"{dir}/{pre}{idx}/Mask/{mask}.npy")
 
         # if param == 'MD':
-        #     outliers = np.where(img>2.5)
+        #     outliers = np.where(img>5)
         #     img[outliers] = 0
         #     mask_file[outliers] = 0
         oup_imgs.append(img)
@@ -88,16 +92,24 @@ def rotate_imgs_auto(data):
 def mask(data):
     '''
     Masks the images with the mask obtained from get_
+
+    Inputs:
     data: list of images and masks
+
+    Outputs:
     ouptut: list of masked images and masks
     '''
     imgs,masks = data
-    return [img*mask for img,mask in zip(imgs,masks)],masks
+    output = [img*mask for img,mask in zip(imgs,masks)],masks
+    return output
 def crop(data):
     '''
     Crops the images and masks by removing all columns and rows that contain only 0's
+
+    Inputs:
     data: list of images and masks
-    ouptut: list of cropped images and masks
+    Outputs:
+    output: list of cropped images and masks
     '''
     imgs,masks = data
     oup_imgs = []
@@ -108,12 +120,16 @@ def crop(data):
         yl,yr = y.min(),y.max()
         oup_imgs.append(img[xl:xr+1, yl:yr+1])
         oup_masks.append(mask[xl:xr+1, yl:yr+1])
-    return oup_imgs,oup_masks
+    output = oup_imgs,oup_masks
+    return output
 def pp(data):
     '''
-    Pre-Processing
-    Rotates, Masks, Crops the input images and masks
+    Pre-Processing:Rotates, Masks, Crops the input images and masks
+
+    Inputs:
     data: list of images and masks
+
+    Outputs:
     ouptut: list of rotated, masked, cropped images and masks
     '''
     return crop(mask(rotate_imgs_auto(data)))

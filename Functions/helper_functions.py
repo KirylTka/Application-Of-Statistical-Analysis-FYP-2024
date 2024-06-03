@@ -1,3 +1,4 @@
+#Helper Functions
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -8,6 +9,8 @@ def helper_cmaps(imgs): #Configures plt.imshow() cmaps for images.
     Configures plt.imshow() cmap settings for plotting. Matches the vmax and vmin across all images
     Use like this: plt.imshow(img, **helper_cmaps(imgs))
     Or if single image: plt.imshow(img, **helper_cmaps([img]))
+
+    Inputs:
     imgs: list of images
     
     '''
@@ -26,9 +29,12 @@ def pims(imgs,title=None,figsize = (10,6)):
     '''
     Plotting Helper Function for plotting multiple figures at once
     Plots up to 15 images from a list
+
+    Inputs:
     imgs: list of images
     title: title of plot
-    figsize: figsize of plot
+    figsize: figure size of plot
+
     '''
     fig, axs = plt.subplots(nrows=3,ncols=5,layout='constrained',figsize=figsize)
     fig.patch.set_facecolor((211/255,238/255,251/255,1))
@@ -46,7 +52,12 @@ def pims(imgs,title=None,figsize = (10,6)):
 def to_dist(imgs):
     '''
     Converts a list of images to a distribution
+
+    Inputs:
     imgs: list of images
+
+    Outputs:
+    dist: 1d distribution of the values in the image.
     '''
     oup = []
     for im in imgs:
@@ -55,11 +66,14 @@ def to_dist(imgs):
         image = image[~np.isnan(image)]
         image = image.flatten()
         oup.append(image)
-    return np.concatenate(oup)
+    dist = np.concatenate(oup)
+    return dist
 
 def plot_dists(dist_h,dist_uh,bin_n,labels=['Healthy','HCM'],ax = None):
     '''
     Plot Distributions obtained from to_dist(imgs)
+
+    Inputs
     dist_h,dist_uh: the two distributions you want to plot. (N,) Numpy array of pixel values
     bin_n: number of bins to use in histogram
     labels: labels assigned to dist_h,dist_uh respectively
@@ -83,6 +97,8 @@ def plot_dists(dist_h,dist_uh,bin_n,labels=['Healthy','HCM'],ax = None):
 def plot_ims(set_nan=True, *args):
     '''
     Another Plotting Function Helper
+
+    Inputs:
     set_nan: sets the 0 values in the image to nan so no background is present.
     args: list of images.
     '''
@@ -102,41 +118,19 @@ def plot_ims(set_nan=True, *args):
             img = img.copy()
             img = img.astype(float)
             if set_nan: img[img==0] = np.nan
-
-            # cmap = helper_cmaps([img])['cmap']
-            # colors = [cmap(i) for i in np.linspace(0,1,int(np.nanmax(img)+1))]
-            # cmaps = mcolors.ListedColormap(colors)
-            # bounds = [i for i in range(int(np.nanmax(img)+2))]
-            # norm = mcolors.BoundaryNorm(bounds, cmaps.N)
-            # im = ax.imshow(img,cmap=cmaps,norm=norm)
             im = ax.imshow(img,**helper_cmaps(args))
-            # im = ax.imshow(img,cmap=helper_cmaps(args)['cmap'],vmin=-90,vmax=90)
-        cbar = fig.colorbar(im, ax = axs.ravel().tolist(),shrink=0.3,orientation='horizontal',ticks = [0,180,360])
-        # cbar = fig.colorbar(im, ax = axs.ravel().tolist(),shrink=0.5,orientation='horizontal',ticks=[-90,-45,0,45,90],label='TA')
+
+        cbar = fig.colorbar(im, ax = axs.ravel().tolist(),shrink=0.3,orientation='horizontal')
         cbar.ax.tick_params(labelsize=16)
-        cbar.set_label('Circumfrential Position',size=16)
     else:
         img = args[0]
         axs.set_axis_off()
         img = img.copy()
         img = img.astype(float)
         if set_nan: img[img==0] = np.nan
-        # im = axs.imshow(img,cmap=helper_cmaps(args)['cmap'],vmin=-90,vmax=90)
-        # cmap = helper_cmaps(args)['cmap']
-        # colors = [cmap(i) for i in np.linspace(0,1,int(np.nanmax(img)+1))]
-        # cmaps = mcolors.ListedColormap(colors)
-        # bounds = [i for i in range(int(np.nanmax(img)+2))]
-        # norm = mcolors.BoundaryNorm(bounds, cmaps.N)
-
-        # im = axs.imshow(img,**helper_cmaps([img]))
-        im = axs.imshow(img,helper_cmaps([img])['cmap'],vmin=-90,vmax=90)
-        # im = axs.imshow(img,cmap=cmaps,norm=norm)
-        # cbar = fig.colorbar(im, ax = axs,shrink=0.3,orientation='horizontal',spacing='proportional',ticks=np.linspace(0,int(np.nanmax(img)),int(np.nanmax(img)+1)))
-        # cbar = fig.colorbar(im, ax = axs,shrink=0.5,orientation='horizontal',ticks=[0,180,360])
-        cbar = fig.colorbar(im, ax = axs,shrink=0.5,orientation='horizontal',ticks=[-90,-45,0,45,90])
-        # cbar = fig.colorbar(im, ax = axs,shrink=0.5,orientation='horizontal')
+        im = axs.imshow(img,**helper_cmaps([img]))
+        cbar = fig.colorbar(im, ax = axs,shrink=0.5,orientation='horizontal')
         cbar.ax.tick_params(labelsize=16)
-        cbar.set_label('E2A (degrees)',size=16)
     plt.show()
 
     

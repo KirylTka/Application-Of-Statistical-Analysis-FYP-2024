@@ -1,3 +1,4 @@
+#Unwrap Analysis Functions
 from Functions.import_functions import get_, pp
 from Functions.helper_functions import helper_cmaps,pims,to_dist,plot_dists,plot_ims
 from Functions.unwrap_functions import unwrap, vals_to_barcode
@@ -30,7 +31,8 @@ def pick_centre_mean_(alg_mask):
 def pick_centre_middle_(alg_mask):
     '''
     private function
-    Calculates the centre of the image by taking the central point'''
+    Calculates the centre of the image by taking the central point
+    '''
     x_mid = int(alg_mask.shape[1]//2)
     y_mid = int(alg_mask.shape[0]//2)
     return x_mid,y_mid
@@ -52,11 +54,14 @@ def unwrap_inner_(img1,mask1,pick_centre_algorithm=pick_centre_mean_):
     x_centre,y_centre = pick_centre_algorithm(bordered_mask)
     x_coords,y_coords = np.meshgrid(np.arange(bordered_imag.shape[0]),np.arange(bordered_imag.shape[1]),indexing='ij')
     i_coords,j_coords = np.meshgrid(np.arange(bordered_imag.shape[0]),np.arange(bordered_imag.shape[1]),indexing='ij')
+
     x_coords_c = -(x_coords-x_centre)
     y_coords_c = (y_coords-y_centre)
     angles = np.arctan2(x_coords_c,y_coords_c)
+
     angles[np.where(angles<0)] = 2*np.pi+angles[np.where(angles<0)]
     angles[np.where((angles==0)&bordered_mask)] = 2*np.pi
+
     def get_contour_values(alg_mask,bordered_mask,bordered_imag,angles):
         contour_mask = np.zeros_like(bordered_mask,dtype=np.uint8)
         contours,_ = cv2.findContours(np.ascontiguousarray(alg_mask,dtype=np.uint8),cv2.RETR_CCOMP,cv2.CHAIN_APPROX_NONE)
@@ -64,8 +69,6 @@ def unwrap_inner_(img1,mask1,pick_centre_algorithm=pick_centre_mean_):
 
         def add_diagonal_elements_contour_mask(contour_mask):
             kernel = np.array([[0, 1, 0],[1, 0, 1],[0, 1, 0]])
-        
-        # Use convolution to count the number of neighbors
             neighbors_count = convolve2d(contour_mask, kernel, mode='same', boundary='fill', fillvalue=0)
             outside = flood_fill(contour_mask,(0,0),1,connectivity=1,tolerance=0)
             outside[np.nonzero(contour_mask)] = 0
@@ -83,13 +86,9 @@ def unwrap_inner_(img1,mask1,pick_centre_algorithm=pick_centre_mean_):
         imag_angles = angles[contour_indxs]
         imag_i = i_coords[contour_indxs]-20
         imag_j = j_coords[contour_indxs]-20
-        # alg_mask = np.ascontiguousarray(alg_mask,dtype=float)
         alg_mask[np.nonzero(contour_mask)] = 0
         return alg_mask,np.dstack((imag_values,imag_angles,imag_i,imag_j))[0]
     
-    # oup = get_contour_values(alg_mask,bordered_mask,bordered_imag,angles)
-    # plot_ims(alg_mask,oup[0])
-    # plt.show()
 
     contour_values = []
     while(True):
@@ -122,9 +121,11 @@ def unwrap_outer_(img1,mask1,pick_centre_algorithm = pick_centre_mean_):
     x_centre,y_centre = pick_centre_algorithm(bordered_mask)
     x_coords,y_coords = np.meshgrid(np.arange(bordered_imag.shape[0]),np.arange(bordered_imag.shape[1]),indexing='ij')
     i_coords,j_coords = np.meshgrid(np.arange(bordered_imag.shape[0]),np.arange(bordered_imag.shape[1]),indexing='ij')
+
     x_coords_c = -(x_coords-x_centre)
     y_coords_c = (y_coords-y_centre)
     angles = np.arctan2(x_coords_c,y_coords_c)
+
     angles[np.where(angles<0)] = 2*np.pi+angles[np.where(angles<0)]
     angles[np.where((angles==0)&bordered_mask)] = 2*np.pi
 
@@ -136,7 +137,6 @@ def unwrap_outer_(img1,mask1,pick_centre_algorithm = pick_centre_mean_):
         def add_diagonal_elements_contour_mask(contour_mask):
             kernel = np.array([[0, 1, 0],[1, 0, 1],[0, 1, 0]])
         
-        # Use convolution to count the number of neighbors
             neighbors_count = convolve2d(contour_mask, kernel, mode='same', boundary='fill', fillvalue=0)
             outside = flood_fill(contour_mask,(0,0),1,connectivity=1,tolerance=0)
             inside = 1-outside
@@ -154,14 +154,8 @@ def unwrap_outer_(img1,mask1,pick_centre_algorithm = pick_centre_mean_):
         imag_angles = angles[contour_indxs]
         imag_i = i_coords[contour_indxs]-20
         imag_j = j_coords[contour_indxs]-20
-        # alg_mask = np.ascontiguousarray(alg_mask,dtype=float)
         alg_mask[np.nonzero(contour_mask)] = 0
         return alg_mask,np.dstack((imag_values,imag_angles,imag_i,imag_j))[0]
-    
-
-    # oup = get_contour_values(alg_mask,bordered_mask,bordered_imag,angles)
-    # plot_ims(alg_mask,oup[0])
-    # plt.show()
 
     contour_values = []
     while(True):
@@ -179,7 +173,7 @@ def correct_end_vals_(out):
     '''
     private function
     Correction for the number of layers in the image
-    This is the algorithm responsible for correcting the layers (See report)'''
+    This is the algorithm responsible for correcting the layers if the last layers have too few values in them'''
     sum_vals = 0
     for i in range(len(out)-1):
         num_vals = len(out[::-1][i])
@@ -276,14 +270,11 @@ def vals_to_barcode_updated_(contour_values,tol):
             df.loc[idx,np.round(tol*point[1])/tol] = point[0]
     df = df.apply(pd.to_numeric)
 
-    # df = df.apply(fill_row, axis=0)
     df = df.ffill(axis=1,limit=1)
     df = df.interpolate('linear',axis=0,limit=1)
     df = df.interpolate('linear',axis=1,limit=1)
     df = df.ffill(axis=1,limit=1)
     df = df.ffill(axis=0)
-    # df = df.ffill(axis=1)
-    # df = df.bfill(axis=0,limit=1)
     unwrapped_img = df.to_numpy(dtype=float)
     return unwrapped_img
 
@@ -337,9 +328,10 @@ def get_inner_outer_unwraps(data):
 def uw2(data,num_M=None,num_layers=None,return_contours=False,return_layer_maps=False):
     '''
     this is the main unwrap function responsible for most of the work. It takes a bit long
-    on a large amount of images so i recommend unwrapping before doing heavy computations. 
+    on a large amount of images so I recommend unwrapping before doing heavy computations. 
     Or use jupyter notebook.
 
+    Inputs:
     data: list of images and masks
     num_M: Number of points in the circumfrential direction of barcode. If left blank, will take the value of the largest
             by pixel count. Doesnt need to be set if return_contours or return_layer_maps == True
@@ -376,12 +368,15 @@ def get_layer_maps(data,num_layers=None):
     '''
     Retrieves the layer_maps of all images in data
 
+    Inputs:
     data: list of images and masks
-
     num_layers: number of layers to have in the final image. set to 3 to retrieve inner, middle, outer sections
                 if left as None, will automatically select it based on the corrected lengths of the inner and outer unwrap
+    
+    Outputs:
+    oups
     '''
-    oups = []
+    layer_maps = []
     for img,mask in zip(*data):
         val_inner = unwrap_inner_(img,mask)
         val_outer = unwrap_outer_(img,mask)
@@ -391,13 +386,18 @@ def get_layer_maps(data,num_layers=None):
         else:
             custom_tol = num_layers-0.001
         layer_map = vals_to_layer_map_(img,val_inner,val_outer,custom_tol=custom_tol)
-        oups.append(layer_map)
-    return oups
+        layer_maps.append(layer_map)
+    return layer_maps
 
 
 def get_num_layers(data):
     '''
     returns the number of layers in an image after correction. Use for approximating size
+    
+    Inputs:
+    data: list of images and masks
+
+    Outputs: Number of layers in each image
     '''
     oups = []
     for img,mask in zip(*data):
@@ -426,31 +426,36 @@ def get_angles1_(img1,mask1,pick_centre_algorithm=pick_centre_mean_):
     angles[np.where((angles==0)&mask1)] = 2*np.pi
     return angles*mask1
 
-def get_angle_masks(data,minn=None,maxx=None):
+def get_angle_maps(data,minn=None,maxx=None):
     '''
     returns the angle maps of all images in data, can set minn and maxx to only select specific regions.(120,300 roughly for septum)
+
+    Inputs:
     data: list of images and masks
     minn,maxx: minimum and maximum angles to retrieve
+
+    Outputs:
+
     '''
-    oups = []
+    angle_maps = []
     for img,mask in zip(*data):
         img = img.copy()
         mask = mask.copy()
         angles = get_angles1_(img,mask)
         angles = np.rad2deg(angles.copy())
-        # print(np.nanmax(angles))
-        # print(angles)
         if (minn is not None) and (maxx is not None):
             mask2 = (angles<=maxx)&(angles>=minn)
             angles = np.where(mask2,angles,0)
         angles[np.where(angles)] = 1
         img = img*angles
-        oups.append(img)
-    return oups
+        angle_maps.append(img)
+    return angle_maps
 
 def calculate_average_angle(imgs):
-    ''' given a set of images, calculates the periodic average angle in it'''
-    ''' used for Figure of diastolic and systolic E2A in septum'''
+    ''' 
+    given a set of images, calculates the periodic average angle in it
+    used for Figure of diastolic and systolic E2A in septum
+    '''
     oups = []
     for img in imgs:
         img = img.copy()

@@ -1,3 +1,4 @@
+#AI Functions
 from Functions.import_functions import get_, pp
 from Functions.helper_functions import to_dist, plot_dists, helper_cmaps, plot_ims
 from Functions.unwrap_functions import uw2
@@ -6,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import random
 import pandas as pd
-from Functions.local_variance_analysis_functions import calc_var
+from Functions.local_SD_analysis_functions import calc_var
 from sklearn.model_selection import train_test_split
 import pickle
 import os
@@ -19,7 +20,7 @@ def gen_data_split(healthy_images,unhealthy_images,test_size,repeats=False):
 
 
     returns:
-        4 lists of training and testing data.
+        a lists of training and testing data.
         y data is categorical, meaning the output is [0,1] or [1,0] rather than [0] or [1]
 
     '''
@@ -54,6 +55,10 @@ def normalise(healthy_images,unhealthy_images,minn=-90,maxx=90):
     '''
     normalises values to range of -1 to 1 for each image. If angle parameter, dont pass values into minn or maxx.
     If you want it to be automtically selected, set minn,maxx == None
+
+    Inputs:
+    healthy_images,unhealthy_images: list of healthy and HCM images
+    minn,maxx: values in the original images mapped to -1 and 1
 
     '''
     imgs_h = []
@@ -124,7 +129,16 @@ def standardise(healthy_images,unhealthy_images):
 
     return imgs_h,imgs_uh
 def resize_images(X_train,X_test):
-
+    '''
+    Resizes the images to a constant size. The largest image had a dimension of 63, so images were chosen
+    to be resized to 64 by 64.
+    
+    Inputs:
+    X_train,X_test: list of input data.
+    Ouputs:
+    new_X_train,new_X_test: numpy arrays of size Mx64x64x1, where M is the number of individuals in
+                            training and test set
+    '''
     max_height = 64
     max_width = 64
     new_X_train = []
@@ -158,6 +172,14 @@ def resize_images(X_train,X_test):
 def build_model_cnn(patience,start_from):
     '''
     choose your model architecture here
+
+    Inputs:
+    patience: how many epochs the model waits before stopping if it hasnt reached a new minimum of validation loss
+    start_from: the number of epochs to wait before starting early stopping criterion
+
+    Outputs:
+    model: Compiled TensorFlow Model
+    callback: Callback to use during training
     '''
     # tf.keras.utils.disable_interactive_logging()
     input_shape = (64,64,1)
@@ -176,7 +198,19 @@ def build_model_cnn(patience,start_from):
 
     
 def train_model(model, callback, data, epochs):
-    '''trains model and evalutes'''
+    '''trains model and evalutes
+    
+    Inputs:
+    model: Compiled TensorFlow Model
+    callback: Callback to use during training
+    data: [X_train,y_train,X_test,y_test]
+    epochs: number of cycles to train the neural network. Effectively how many times it sees the data. 
+
+    Outputs:
+    history: Training and Validation Loss and Accuracy
+    info_df: Information dataframe containing final test and train losses and accuracies
+    '''
+    
     X_train, y_train, X_test, y_test = data
 
     history = model.fit(X_train,y_train, epochs=epochs, callbacks=[callback],validation_data=(X_test,y_test))
@@ -226,6 +260,12 @@ def plotHistory(history):
 def save_model(name,model,data,history):
     '''
     saves the model, training and validation data, and training history
+    Inputs:
+    name: name of model to save. Will be save in ./Models/name/
+    model: TensorFlow model to save
+    data: training and test data used
+    history: training and validation accuracy and loss during training
+
     '''
     if not os.path.exists(f'./Models/{name}'):
         os.makedirs(f'./Models/{name}')
@@ -239,7 +279,14 @@ def save_model(name,model,data,history):
 
 def load_model(name):
     '''
-    Load the model, training and validation data, and training history
+    loads the model, training and validation data, and training history
+    Inputs:
+    name: name of model to load. Will be loaded from ./Models/name/
+
+    Outputs:
+    model: TensorFlow model to load
+    data: training and test data used to train model
+    history: training and validation accuracy and loss during training
     '''
     new_model = tf.keras.models.load_model(f'./Models/{name}/{name}_model.keras')
     with open(f'./Models/{name}/{name}_history.pkl', 'rb') as file: 

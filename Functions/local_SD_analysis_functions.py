@@ -1,20 +1,25 @@
+#Local SD Analysis Functions
 import numpy as np
 from scipy.ndimage import generic_filter
 
-def local_variance_(window,min_points):
+def local_SD_(window,min_points):
     '''
     private function
     calculates the non-periodic standard deviation of a window in the image
+    min_points: minimum number of points required in the window to calculate the SD,
+                if less, oup is set to 0
     '''
     wdw = window[~np.isnan(window)]
     if len(wdw) < min_points:
         return 0
     return np.sqrt(wdw.var())
 
-def circular_variance_(window,min_points):
+def circular_SD_(window,min_points):
     '''
     private funtion
     calculates the periodic standard deviation of a window in the image
+    min_points: minimum number of points required in the window to calculate the SD,
+                if less, oup is set to 0
     '''
     wdw = window[~np.isnan(window)]
     if len(wdw) < min_points:
@@ -46,18 +51,19 @@ def image_SD_calc_function_(img,mask,n,periodic_var=False,min_num_points=5):
     
     # local_variance_image = generic_filter(img, local_variance, size=n)
     if periodic_var:
-        local_variance_image = generic_filter(padded_img,lambda x: circular_variance_(x,min_points=min_num_points), size=n)
+        local_variance_image = generic_filter(padded_img,lambda x: circular_SD_(x,min_points=min_num_points), size=n)
     else:
-        local_variance_image = generic_filter(padded_img, lambda x: local_variance_(x,min_points=min_num_points), size=n)
+        local_variance_image = generic_filter(padded_img, lambda x: local_SD_(x,min_points=min_num_points), size=n)
     final_image = local_variance_image*padded_mask
     return final_image[n:-n,n:-n]
 
 def calc_SD(data, n, periodic_var=False,min_num_points=5):
     '''
-    calculates the local variance over all images in data: list of images and masks
+    calculates the local variance over all images in data
+    data: list of images and masks
     n: size of filter (nxn)
     periodic_var: bool, if True, will calculate the periodic SD, if False, will calculate the classic SD
-    min_num_points=5: minimum number of pixels required in an image to compute the SD.
+    min_num_points=5: minimum number of pixels required in a filter to compute the SD.
     '''
     oups = []
     masks = data[1]

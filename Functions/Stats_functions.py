@@ -1,3 +1,4 @@
+#stats functions
 from Functions.import_functions import get_, pp
 from Functions.helper_functions import to_dist, plot_dists, helper_cmaps,plot_ims
 from Functions.unwrap_functions import uw2,get_angles
@@ -11,8 +12,8 @@ from copy import deepcopy
 
 
 '''
-the way the workflow has been coded is a bit strange, but you shouldnt have to use any of these functions unless you specifically
-want to run it on an individual image instead of using the LOOCV cross-validation
+The first four functions in this file are responsible for computing which distribution an image matches better
+They have a general format that needs to be followed to be able to include your own.
 
 So the general format is for inputs:
 img: the input image, can be a distribution or a 2d image
@@ -114,9 +115,9 @@ def KS2(img,health,h_dist,uh_dist):
 
 def run_all_tests_loocv(imgs_h,imgs_uh,bin_n=30):
     '''
+    This is the main function used to run LOOCV statistical tests on each image in imgs_h and imgs_uh
     imgs_h,imgs_uh = list of healthy and unhealthy images
     bin_n = number of bins for LL and R2 test
-    This is the main function used to run LOOCV statistical tests on the imgs_h and imgs_uh
     '''
 
     len_h = len(imgs_h)
@@ -214,8 +215,7 @@ def run_all_tests_loocv(imgs_h,imgs_uh,bin_n=30):
         predict = oup[1]
         pm_ll.iloc[predict,1] += 1
 
-    '''
-    account for class imbalance by setting sums of healthy and unhealthy individuals to the same number'''
+    #account for class imbalance by setting sums of healthy and unhealthy individuals to the same number
     pm_mw = pm_mw.copy().div(pm_mw.sum())
     pm_ks = pm_ks.copy().div(pm_ks.sum())
     pm_r2 = pm_r2.copy().div(pm_r2.sum())
@@ -230,18 +230,17 @@ def run_all_tests_loocv(imgs_h,imgs_uh,bin_n=30):
             uh_arr.loc[:,"acc (%)"] = np.round(100*uh_arr.loc[:,"acc (%)"]/uh_arr.loc[:,'n'],2)
             oup.append([h_arr,uh_arr])
         return oup
-    '''
-    The accuracy is actually only set at the end by doing acc(%)/n as acc stores how many times it was correctly predicted'''
+    #The accuracy is actually only set at the end by doing acc(%)/n as acc stores how many times it was correctly predicted
     returnval[:-1] = set_acc(returnval[:-1])
     return returnval
 
 
 def run_all_tests_kfold(imgs_h,imgs_uh,test_size,num_runs,bin_n):
     '''
-    effectively the exact same as run_all_tests_loocv but selects multiple individuals for test. 
+    Similar run_all_tests_loocv but selects multiple individuals for the test set. 
     imgs_h,imgs_uh: list of healthy and HCM images
-    test_size: Number of individuals to put into test set
-    num_runs: how many times to rerun the train-test split and statistical test
+    test_size: Number of individuals to put into test set [healthy_test_number,HCM_test_number]
+    num_runs: how many times to rerun the train-test split and statistical test workflow
     bin_n: number of bins for LL and R2 test
     '''
     len_h = len(imgs_h)
@@ -363,6 +362,7 @@ def get_oups(output,test,pri=None):
     retrieves the image level data and performance matrix from the big output array of run_all_tests_loocv or run_all_test_kfold
     output: output of run_all_tests_loocv or run_all_test_kfold (returnval)
     test: one of the tests below to specifically retrieve
+    pri: set to something to print the image level data and performance matrix
     '''
     tests = ['MW','KS','R2','LL']
     test = tests.index(test)

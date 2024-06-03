@@ -1,4 +1,4 @@
-
+#Cross Correlation Functions
 from Functions.import_functions import get_, pp
 from Functions.helper_functions import to_dist, plot_dists, helper_cmaps, plot_ims
 from Functions.unwrap_functions import uw2
@@ -7,22 +7,27 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 import copy
 import pandas as pd
-def group_unwraps_(data):
+def group_unwraps_(countour_value):
     '''
     helper_function for when youre working with the inner, middle outer region. The default uw2 method
     returns the contour_values output as a list of Nx3, where N is the number of images and 3 is the number of regions
-    This just converts it to a 3XN list
+    This just converts it to a 3XN list so that extracting all images for a particular region can be done through oup[i]
+
+    Inputs:
+    contour_value: contour_value output from uw2 function
     '''
     oup = [[],[],[]]
-    for i in range(len(data)):
-        for j in range(len(data[0])):
-            oup[j].append(data[i][j])
+    for i in range(len(countour_value)):
+        for j in range(len(countour_value[0])):
+            oup[j].append(countour_value[i][j])
     return oup
 
-def split_unwraps(uws,test_idx):
+def split_unwraps(countour_value,test_idx):
     '''
-    Split the unwraps into train and a singular test image for LOOCV
-    select the test_idx to make sure it doesn't overflow the number of images
+    Split the unwraps into train and a singular test image for LOOCV.
+    
+    Inputs:
+    uws: 
     '''
     uws = group_unwraps_(uws)
     train = [[],[],[]]
