@@ -364,6 +364,7 @@ def uw2(data,num_M=None,num_layers=None,return_contours=False,return_layer_maps=
             oups.append(vals_to_barcode_updated_method2_(oup,num_M))
     return oups
 
+
 def get_layer_maps(data,num_layers=None):
     '''
     Retrieves the layer_maps of all images in data

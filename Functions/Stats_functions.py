@@ -112,7 +112,6 @@ def KS2(img,health,h_dist,uh_dist):
     oup1 = [float(i) for i in oup1]
     return [oup1,oup2]
 
-
 def run_all_tests_loocv(imgs_h,imgs_uh,bin_n=30):
     '''
     This is the main function used to run LOOCV statistical tests on each image in imgs_h and imgs_uh
@@ -357,7 +356,7 @@ def get_performance_metrics(df):
     performance_metrics = {"Sensitivity": np.round(a/(a+c)*100,3),"Specificity" : np.round(d/(b+d)*100,3), "PPV" : np.round(a/(a+b)*100,3), "NPV" : np.round(d/(c+d)*100,3),"F1 Score": 2*precision*recall/(precision+recall),"Total" : np.round((a+d)/(a+b+c+d)*100,3)}
     return performance_metrics
 
-def get_oups(output,test,pri=None):
+def get_metrics(output,test,pri=None):
     '''
     retrieves the image level data and performance matrix from the big output array of run_all_tests_loocv or run_all_test_kfold
     output: output of run_all_tests_loocv or run_all_test_kfold (returnval)
@@ -372,7 +371,6 @@ def get_oups(output,test,pri=None):
         print("Performance Matrix\n", output[-1][test])
     return get_performance_metrics(output[-1][test])
 
-
 '''
 Example code to generate the large tables found in the appendix
 This example computes the F1 Scores and NPV's for the middle region of the local variance images
@@ -381,6 +379,7 @@ techniques = ['SE','STEAM']
 params = ['MD','FA','IA','E2A']
 bin_n = 30
 n = 3
+
 df_f1 = pd.DataFrame(columns=['MW','KS','R2','LL']) #store the performance of each test per subset of data
 df_npv = pd.DataFrame(columns=['MW','KS','R2','LL'])
 for param in params: # for each subset of data effectively
@@ -420,10 +419,10 @@ for param in params: # for each subset of data effectively
             uh_ = [i[:,0] for i in uh]
 
             oup = run_all_tests_loocv(h_,uh_,30) #perform loocv tests on images
-            mw = get_oups(oup,'MW') #retrieve performances of tests
-            ks = get_oups(oup,'KS')
-            r2 = get_oups(oup,'R2')
-            ll = get_oups(oup,'LL')
+            mw = get_metrics(oup,'MW') #retrieve performances of tests
+            ks = get_metrics(oup,'KS')
+            r2 = get_metrics(oup,'R2')
+            ll = get_metrics(oup,'LL')
             # print(mw)
             # print(ks)
             # print(r2)
@@ -467,10 +466,10 @@ for param in params: # for each subset of data effectively
             uh_ = uh[0] 
 
             oup = run_all_tests_loocv(h_,uh_,30) #perform loocv tests on images
-            mw = get_oups(oup,'MW') #retrieve performances of tests
-            ks = get_oups(oup,'KS')
-            r2 = get_oups(oup,'R2')
-            ll = get_oups(oup,'LL')
+            mw = get_metrics(oup,'MW') #retrieve performances of tests
+            ks = get_metrics(oup,'KS')
+            r2 = get_metrics(oup,'R2')
+            ll = get_metrics(oup,'LL')
             # print(mw)
             # print(ks)
             # print(r2)

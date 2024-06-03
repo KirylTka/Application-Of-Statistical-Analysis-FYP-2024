@@ -57,7 +57,7 @@ def image_SD_calc_function_(img,mask,n,periodic_var=False,min_num_points=5):
     final_image = local_variance_image*padded_mask
     return final_image[n:-n,n:-n]
 
-def calc_SD(data, n, periodic_var=False,min_num_points=5):
+def calc_SD(data, n, periodic_SD=False,min_num_points=5):
     '''
     calculates the local variance over all images in data
     data: list of images and masks
@@ -70,7 +70,7 @@ def calc_SD(data, n, periodic_var=False,min_num_points=5):
     for img,mask in zip(*data):
         img = img.copy()
         mask = mask.copy()
-        val = image_SD_calc_function_(img,mask,n,periodic_var=periodic_var,min_num_points=min_num_points)
+        val = image_SD_calc_function_(img,mask,n,periodic_var=periodic_SD,min_num_points=min_num_points)
         oups.append(val)
     # return np.array(oups)
     return oups,masks
