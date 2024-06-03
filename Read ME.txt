@@ -1,0 +1,12 @@
+Author: Kiryl Tarasenka
+CID: 01857233
+
+All major functions that were of great help are available in the functions folder.
+If there are any issues, feel free to contact me for assistance.
+
+The three main successfull neural networks trained during this project are available with their training-test data and training history
+you can use the load_model() function in ai_functions.py to load this by just calling the name of the file.
+
+All data used throughout the project is available in the data Folder.
+
+Best wishes,
