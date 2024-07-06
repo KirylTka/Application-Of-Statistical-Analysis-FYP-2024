@@ -1,7 +1,6 @@
 #Unwrap Analysis Functions
-from Functions.import_functions import get_, pp
+from Functions.import_functions import get, pp
 from Functions.helper_functions import helper_cmaps,pims,to_dist,plot_dists,plot_ims
-from Functions.unwrap_functions import unwrap, vals_to_barcode
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -427,7 +426,7 @@ def get_angles1_(img1,mask1,pick_centre_algorithm=pick_centre_mean_):
     angles[np.where((angles==0)&mask1)] = 2*np.pi
     return angles*mask1
 
-def get_angle_maps(data,minn=None,maxx=None):
+def get_angles(data,minn=None,maxx=None):
     '''
     returns the angle maps of all images in data, can set minn and maxx to only select specific regions.(120,300 roughly for septum)
 
@@ -452,6 +451,26 @@ def get_angle_maps(data,minn=None,maxx=None):
         angle_maps.append(img)
     return angle_maps
 
+def get_angle_maps(data):
+    '''
+    returns the angle maps of all images in data, can set minn and maxx to only select specific regions.(120,300 roughly for septum)
+
+    Inputs:
+    data: list of images and masks
+    minn,maxx: minimum and maximum angles to retrieve
+
+    Outputs:
+
+    '''
+    angle_maps = []
+    for img,mask in zip(*data):
+        img = img.copy()
+        mask = mask.copy()
+        angles = get_angles1_(img,mask)
+        angles = np.rad2deg(angles.copy())
+
+        angle_maps.append(angles)
+    return angle_maps
 def calculate_average_angle(imgs):
     ''' 
     given a set of images, calculates the periodic average angle in it
