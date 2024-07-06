@@ -27,9 +27,10 @@ def split_unwraps(countour_value,test_idx):
     Split the unwraps into train and a singular test image for LOOCV.
     
     Inputs:
-    uws: 
+    uws: output of unwraps
+    test_idx: the index individual image you want to take out to put into the test
     '''
-    uws = group_unwraps_(uws)
+    uws = group_unwraps_(countour_value)
     train = [[],[],[]]
     test = [[],[],[]]
     num_vals = len(uws[0])

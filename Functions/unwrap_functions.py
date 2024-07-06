@@ -1,5 +1,5 @@
 #Unwrap Analysis Functions
-from Functions.import_functions import get, pp
+from Functions.import_functions import get_, pp
 from Functions.helper_functions import helper_cmaps,pims,to_dist,plot_dists,plot_ims
 import matplotlib.pyplot as plt
 
@@ -312,7 +312,6 @@ def get_inner_outer_unwraps(data):
     data: list of images and masks
     oups_inner,oups_outer: returns the contour_values of the inner and outer unwrap
     '''
-    imgs,masks = data
     oups_inner = []
     oups_outer = []
     for img,mask in zip(*data):
